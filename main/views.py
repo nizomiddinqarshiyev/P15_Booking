@@ -11,3 +11,4 @@ class HomeAPIView(APIView):
 
     def get(self, request):
         return JsonResponse({'message': 'Home'})
+
