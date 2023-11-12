@@ -14,6 +14,8 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 
+from datetime import timedelta
+
 from pip._internal.cli.spinners import open_spinner
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -48,6 +50,7 @@ INSTALLED_APPS = [
 
     # third-party
     'rest_framework',
+    'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
@@ -118,11 +121,9 @@ AUTH_PASSWORD_VALIDATORS = [
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        }
+    )
 }
 
-
-from datetime import timedelta
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=20),
