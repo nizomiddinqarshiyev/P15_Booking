@@ -1,6 +1,8 @@
+from django.contrib.auth.views import get_user_model
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 
+User = get_user_model()
 
 class Category(MPTTModel):
     name = models.CharField(max_length=50)
@@ -67,12 +69,19 @@ class Flight(models.Model):
     price = models.FloatField()
 
 
+class StayOrder(models.Model):
+    stay_id = models.ForeignKey('Stay', on_delete=models.CASCADE)
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    last_update = models.DateTimeField(auto_now_add=True)
 
 
+class FlightOrder(models.Model):
+    flight_id = models.ForeignKey('Flight', on_delete=models.CASCADE)
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    last_update = models.DateTimeField(auto_now_add=True)
 
 
-
-
-
-
-
+class CarRentalOrder(models.Model):
+    car_rental = models.ForeignKey('CarRental', on_delete=models.CASCADE)
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    last_update = models.DateTimeField(auto_now_add=True)
