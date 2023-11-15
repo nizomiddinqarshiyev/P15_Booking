@@ -9,46 +9,46 @@ User = get_user_model()
 
 class SignupAPIView(APIView):
 
-    def get(self, request):
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
+    def post(self, request):
+        firstname = request.POST.get('firstname')
+        lastname = request.POST.get('lastname')
         username = request.POST.get('username')
         email = request.POST.get('email')
         password1 = request.POST.get('password1')
         password2 = request.POST.get('password2')
 
         if password1 == password2:
-            if User.objects.filter(usernmae=username).exists():
-                return Response({'success' : False, 'error' : 'Username already exists !' }, status = 400)
+            if User.objects.filter(username=username).exists():
+                return Response({'success': False, 'error': 'Username already exists !'}, status=400)
             if User.objects.filter(email=email).exists():
-                return Response({'success' : False, 'error' : 'Email already exists !' }, status = 400)
+                return Response({'success': False, 'error': 'Email already exists !'}, status=400)
 
-            user = User.objects.create(
-                first_name=first_name,
-                last_name=last_name,
+            user = User.objects.create_user(
+                first_name=firstname,
+                last_name=lastname,
                 username=username,
                 email=email,
-                password=hashers.make_password(password2)
+                password=password1
             )
             user_serializer = UserSerializer(user)
-            return Response({'success' : True, 'data' : user_serializer.data})
+            return Response({'success': True, 'data': user_serializer.data})
 
         else:
-            return Response({'success' : False, 'error' : 'Passwords are not same !!!'})
+            return Response({'success': False, 'error': 'Passwords are not same !!!'})
 
 
 class LoginAPIVew(APIView):
 
     def get(self, request):
-        username = request.POST.get('username')
-        password = request.POST.get('password')
+        username = request.GET.get('username')
+        password = request.GET.get('password')
         user = authenticate(username=username, password=password)
 
         if user is not None:
             login(request, user)
-            return Response({'success' : True })
+            return Response({'success': True}, )
         else:
-            return Response({'success' : False, 'error' : 'Username or password invalid !!!'})
+            return Response({'success': False, 'error': 'Username or password invalid !!!'})
 
 
 class LogoutAPIVew(APIView):
