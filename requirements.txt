@@ -6,3 +6,6 @@ psycopg2-binary==2.9.9
 python-dotenv==1.0.0
 pytz==2023.3.post1
 sqlparse==0.4.4
+
+django-mptt~=0.15.0
+pip~=23.2.1
