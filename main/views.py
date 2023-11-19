@@ -9,13 +9,12 @@ from main.models import Stay, StayOrder, Flight, FlightOrder, CarRental, CarRent
 from main.serializer import StaysSerializer, StayOrderSerializer, FlightOrderSerializer, FlightSerializer, \
     CarRentalSerializer, CarRentalOrderSerializer
 
-<<<<<<< Updated upstream
+
 User = get_user_model()
-=======
-from .models import Stay, Location, Image
+
+from .models import Stay
 from main.serializers import StaySimpleSerializer
-from .permissions import AdminPermission
->>>>>>> Stashed changes
+
 
 
 # Create your views here.
@@ -65,7 +64,7 @@ class FlightOrderAPIView(APIView):
         return Response({'success': True, 'data': flight_order_serializer.data}, status=200)
 
 
-<<<<<<< Updated upstream
+
 class CarRentalOrderAPIView(APIView):
     permissions_class = (IsAuthenticated,)
 
@@ -83,7 +82,7 @@ class CarRentalOrderAPIView(APIView):
         car_rental_order.save()
         car_rental_order_serializer = CarRentalOrderSerializer(car_rental_order)
         return Response({'success': True, 'data': car_rental_order_serializer.data}, status=200)
-=======
+
 class StayDetailAPIView(APIView):
     def get(self, request, slug):
         try:
@@ -94,4 +93,4 @@ class StayDetailAPIView(APIView):
         return Response(stay_serializer.data)
 
 
->>>>>>> Stashed changes
+
