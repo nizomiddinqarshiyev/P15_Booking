@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView, GenericAPIView
 
-from .models import Stay, Category, Location, Image
+from .models import Stay, Location, Image
 from main.serializers import StaySimpleSerializer
 from .permissions import AdminPermission
 
@@ -99,3 +99,5 @@ class StayDetailAPIView(APIView):
             return Response({'success: False'}, status=404)
         stay_serializer = StaySimpleSerializer(stay, many=True)
         return Response(stay_serializer.data)
+
+
