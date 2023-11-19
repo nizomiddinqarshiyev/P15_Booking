@@ -39,9 +39,9 @@ class SignupAPIView(APIView):
 
 class LoginAPIVew(APIView):
 
-    def get(self, request):
-        username = request.GET.get('username')
-        password = request.GET.get('password')
+    def post(self, request):
+        username = request.POST.get('username')
+        password = request.POST.get('password')
         user = authenticate(username=username, password=password)
 
         if user is not None:

@@ -4,9 +4,17 @@ from mptt.models import MPTTModel, TreeForeignKey
 
 User = get_user_model()
 
+
 class Category(MPTTModel):
     name = models.CharField(max_length=50)
     parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Category'
+        verbose_name_plural = 'Categories'
+
+    def __str__(self):
+        return self.name
 
 
 class Country(models.Model):
@@ -14,7 +22,7 @@ class Country(models.Model):
 
     class Meta:
         verbose_name = 'Country'
-        verbose_name_plural = 'Counties'
+        verbose_name_plural = 'Countries'
 
     def __str__(self):
         return self.name
@@ -22,7 +30,7 @@ class Country(models.Model):
 
 class City(models.Model):
     name = models.CharField(max_length=50)
-    country_id = models.ForeignKey('Country', on_delete=models.CASCADE)
+    country = models.ForeignKey('Country', on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = 'City'
@@ -38,18 +46,23 @@ class Location(models.Model):
     city = models.ForeignKey('City', on_delete=models.CASCADE)
     country = models.ForeignKey('Country', on_delete=models.CASCADE)
     address = models.CharField(max_length=150)
-    location = models.FloatField()
+
+    def __str__(self):
+        return self.address
 
 
 class Stay(models.Model):
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=250)
-    category_id = models.ForeignKey('Category', on_delete=models.CASCADE)
+    category = models.ForeignKey('Category', on_delete=models.CASCADE)
     location = models.ForeignKey('Location', on_delete=models.CASCADE)
     features = models.TextField(blank=True, null=True)
     price = models.FloatField()
     property_rate_stars = models.IntegerField()
     level = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.name
 
 
 class CarRental(models.Model):
@@ -59,6 +72,10 @@ class CarRental(models.Model):
     end_date = models.DateTimeField()
     location = models.ForeignKey('Location', on_delete=models.CASCADE)
     price = models.FloatField()
+    image = models.ImageField(upload_to='media/images/car', blank=True, null=True)
+
+    def __str__(self):
+        return self.name
 
 
 class Flight(models.Model):
@@ -67,21 +84,40 @@ class Flight(models.Model):
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     price = models.FloatField()
+    logo = models.ImageField(upload_to='media/pics/flight', blank=True, null=True)
+
+    def __str__(self):
+        return self.name
 
 
 class StayOrder(models.Model):
-    stay_id = models.ForeignKey('Stay', on_delete=models.CASCADE)
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    stay = models.ForeignKey('Stay', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     last_update = models.DateTimeField(auto_now_add=True)
 
 
 class FlightOrder(models.Model):
-    flight_id = models.ForeignKey('Flight', on_delete=models.CASCADE)
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    flight = models.ForeignKey('Flight', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     last_update = models.DateTimeField(auto_now_add=True)
 
 
 class CarRentalOrder(models.Model):
     car_rental = models.ForeignKey('CarRental', on_delete=models.CASCADE)
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     last_update = models.DateTimeField(auto_now_add=True)
+
+
+class HotelAreaInfo(models.Model):
+    name = models.CharField(max_length=50)
+    stay = models.ForeignKey('Stay', on_delete=models.CASCADE)
+    category = models.ForeignKey('Category', on_delete=models.CASCADE)
+    distance = models.FloatField()
+
+
+class Image(models.Model):
+    stay = models.ForeignKey('Stay', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='media/pics/stay', blank=True, null=True)
+
+
+
