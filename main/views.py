@@ -1,13 +1,18 @@
+import json
+
+from django.db.models import Q
 from django.shortcuts import render
 from django.views import View
 from django.http import JsonResponse
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth.views import get_user_model
 from main.models import Stay, StayOrder, Flight, FlightOrder, CarRental, CarRentalOrder
 from main.serializer import StaysSerializer, StayOrderSerializer, FlightOrderSerializer, FlightSerializer, \
-    CarRentalSerializer, CarRentalOrderSerializer
+    CarRentalSerializer, CarRentalOrderSerializer, QuerySerializer
 
 User = get_user_model()
 
@@ -29,7 +34,6 @@ class StaysOrderAPIView(APIView):
         return Response(stay_serializer.data)
 
     def post(self, request, pk):
-
         user = User.objects.get(user=request.user)
         stay_order = StayOrder.objects.create(
             user_id=user,
@@ -76,3 +80,46 @@ class CarRentalOrderAPIView(APIView):
         car_rental_order.save()
         car_rental_order_serializer = CarRentalOrderSerializer(car_rental_order)
         return Response({'success': True, 'data': car_rental_order_serializer.data}, status=200)
+
+
+class StaySearchView(GenericAPIView):
+    permission_classes = ()
+    serializer_class = StaysSerializer
+
+    @swagger_auto_schema(query_serializer=QuerySerializer)
+    def get(self, request):
+        city_or_country = request.GET.get('city_or_country')
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+        stay_adults = request.GET.get('stay_Adults')
+        stay_children = request.GET.get('stay_Children')
+        stay_room = request.GET.get('stay_Room')
+        data_stays = Stay.objects.filter(
+            Q(location__city__name__icontains=city_or_country) |
+            Q(location__country__name__icontains=city_or_country) |
+            Q(start_date=start_date, end_date=end_date) |
+            Q(stay_Adults=stay_adults, stay_Children=stay_children, stay_Room=stay_room)
+        ).values('id')
+        stays = Stay.objects.filter(id__in=data_stays)
+        stay_serializer = StaysSerializer(stays, many=True)
+        if not stays:
+            return Response({'error': 'Stay not fount !'}, status=404)
+        return Response(stay_serializer.data)
+
+
+class FlightSearchView(GenericAPIView):
+    permission_classes = ()
+    serializer_class = FlightSerializer
+
+    def get(self, request):
+        flight_from = request.GET.get('flight_from')
+        flight_to = request.GET.get('flight_to')
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+        data_flight = Flight.objects.filter(
+            Q(__icontains=flight_from) |
+            Q(location__country__name__icontains=city_or_country) |
+            Q(start_date=start_date, end_date=end_date) |
+            Q(stay_Adults=stay_adults, stay_Children=stay_children, stay_Room=stay_room)
+        ).values('id')
+

@@ -1,3 +1,5 @@
 from django.contrib import admin
 
-# Register your models here.
+from main.models import Stay, Flight, CarRental, Location, City, Country, Category
+
+admin.site.register((Stay, Flight, CarRental, Location, City, Country, Category))

@@ -1,8 +1,12 @@
+import datetime
+from datetime import timedelta
+
 from django.contrib.auth.views import get_user_model
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 
 User = get_user_model()
+
 
 class Category(MPTTModel):
     name = models.CharField(max_length=50)
@@ -50,6 +54,11 @@ class Stay(models.Model):
     price = models.FloatField()
     property_rate_stars = models.IntegerField()
     level = models.IntegerField(default=0)
+    start_date = models.DateField(default=datetime.datetime.now())
+    end_date = models.DateField(default=datetime.datetime.now() + timedelta(days=30))
+    stay_Adults = models.IntegerField(default=1)
+    stay_Children = models.IntegerField(default=0)
+    stay_Room = models.IntegerField(default=1)
 
 
 class CarRental(models.Model):
@@ -64,6 +73,8 @@ class CarRental(models.Model):
 class Flight(models.Model):
     name = models.CharField(max_length=150)
     description = models.TextField()
+    start_city = models.ForeignKey('City',models.CASCADE)
+    end_city = models.ForeignKey('City',models.CASCADE)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     price = models.FloatField()
