@@ -1,10 +1,55 @@
+from django.contrib.auth import get_user_model
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView, GenericAPIView
 
-from .models import Stay, Location, Image
-from main.serializers import StaySimpleSerializer
+from .models import Stay, Location, Image, CarRental, CarRentalOrder, FlightOrder, Flight, StayOrder
+from main.serializers import StaySimpleSerializer, CarRentalSerializer, CarRentalOrderSerializer, FlightOrderSerializer, \
+    FlightSerializer, StayOrderSerializer, StaysSerializer
 from .permissions import AdminPermission
+
+
+User = get_user_model()
+
+
+class StaysOrderAPIView(APIView):
+    permissions_class = (IsAuthenticated,)
+
+    def get(self, request, pk):
+        stay = Stay.objects.get(pk=pk)
+        stay_serializer = StaysSerializer(stay)
+        return Response(stay_serializer.data)
+
+    def post(self, request, pk):
+
+        user = User.objects.get(user=request.user)
+        stay_order = StayOrder.objects.create(
+            user_id=user,
+            stay_id=pk
+        )
+        stay_order.save()
+        stay_order_serializer = StayOrderSerializer(stay_order)
+        return Response({'success': True, 'data': stay_order_serializer.data}, status=200)
+
+
+class FlightOrderAPIView(APIView):
+    permissions_class = (IsAuthenticated,)
+
+    def get(self, request, pk):
+        flight = Flight.objects.get(pk=pk)
+        flight_serializer = FlightSerializer(flight)
+        return Response(flight_serializer.data)
+
+    def post(self, request, pk):
+        user = User.objects.get(user=request.user)
+        flight_order = FlightOrder.objects.create(
+            user_id=user,
+            flight_id=pk
+        )
+        flight_order.save()
+        flight_order_serializer = FlightOrderSerializer(flight_order)
+        return Response({'success': True, 'data': flight_order_serializer.data}, status=200)
 
 
 class StayAPIView(GenericAPIView):
@@ -89,6 +134,25 @@ class CreateStayAPIView(CreateAPIView):
     queryset = Stay.objects.all()
     permission_classes = (AdminPermission,)
     serializer_class = StaySimpleSerializer
+
+
+class CarRentalOrderAPIView(APIView):
+    permissions_class = (IsAuthenticated,)
+
+    def get(self, request, pk):
+        car_rental = CarRental.objects.get(pk=pk)
+        car_rental_serializer = CarRentalSerializer(car_rental)
+        return Response(car_rental_serializer.data)
+
+    def post(self, request, pk):
+        user = User.objects.get(user=request.user)
+        car_rental_order = CarRentalOrder.objects.create(
+            user_id=user,
+            flight_id=pk
+        )
+        car_rental_order.save()
+        car_rental_order_serializer = CarRentalOrderSerializer(car_rental_order)
+        return Response({'success': True, 'data': car_rental_order_serializer.data}, status=200)
 
 
 class StayDetailAPIView(APIView):

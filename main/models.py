@@ -1,10 +1,13 @@
 from datetime import datetime
+from django.contrib.auth.views import get_user_model
 
 from django.db import models
 from os.path import splitext
 from django.template.defaultfilters import slugify
 from mptt.models import MPTTModel, TreeForeignKey
 
+
+User = get_user_model()
 
 def slugify_upload(instance, filename):
     folder = instance._meta.model_name
@@ -87,3 +90,28 @@ class Flight(models.Model):
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     price = models.FloatField()
+
+
+class StayOrder(models.Model):
+    stay = models.ForeignKey('Stay', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    last_update = models.DateTimeField(auto_now_add=True)
+
+
+class FlightOrder(models.Model):
+    flight = models.ForeignKey('Flight', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    last_update = models.DateTimeField(auto_now_add=True)
+
+
+class CarRentalOrder(models.Model):
+    car_rental = models.ForeignKey('CarRental', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    last_update = models.DateTimeField(auto_now_add=True)
+
+
+class HotelAreaInfo(models.Model):
+    name = models.CharField(max_length=50)
+    stay = models.ForeignKey('Stay', on_delete=models.CASCADE)
+    category = models.ForeignKey('Category', on_delete=models.CASCADE)
+    distance = models.FloatField()
