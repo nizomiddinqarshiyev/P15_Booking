@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.shortcuts import render
 from django.views import View
 from django.http import JsonResponse
@@ -24,20 +25,23 @@ class StaysOrderAPIView(APIView):
     permissions_class = (IsAuthenticated,)
 
     def get(self, request, pk):
-        stay = Stay.objects.get(pk=pk)
+        stays_order = StayOrder.objects.get(pk=pk)
+        stay = Stay.objects.get(pk=stays_order.stay_id)
         stay_serializer = StaysSerializer(stay)
         return Response(stay_serializer.data)
 
     def post(self, request, pk):
-
-        user = User.objects.get(user=request.user)
-        stay_order = StayOrder.objects.create(
-            user_id=user,
-            stay_id=pk
-        )
-        stay_order.save()
-        stay_order_serializer = StayOrderSerializer(stay_order)
-        return Response({'success': True, 'data': stay_order_serializer.data}, status=200)
+        stay = Stay.objects.get(id=pk)
+        if StayOrder.objects.filter(Q(user=request.user) & Q(stay=stay)):
+            return Response({'message': 'This order already added'})
+        else:
+            stay_order = StayOrder.objects.create(
+                user=request.user,
+                stay=stay
+            )
+            stay_order.save()
+            stay_order_serializer = StayOrderSerializer(stay_order)
+            return Response({'success': True, 'data': stay_order_serializer.data}, status=200)
 
 
 class FlightOrderAPIView(APIView):
