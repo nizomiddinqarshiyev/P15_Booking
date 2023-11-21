@@ -4,6 +4,7 @@ from datetime import timedelta
 from django.contrib.auth.views import get_user_model
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
+from django.utils.timezone import now
 
 User = get_user_model()
 
@@ -54,8 +55,8 @@ class Stay(models.Model):
     price = models.FloatField()
     property_rate_stars = models.IntegerField()
     level = models.IntegerField(default=0)
-    start_date = models.DateField(default=datetime.datetime.now())
-    end_date = models.DateField(default=datetime.datetime.now() + timedelta(days=30))
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
     stay_Adults = models.IntegerField(default=1)
     stay_Children = models.IntegerField(default=0)
     stay_Room = models.IntegerField(default=1)
@@ -73,8 +74,22 @@ class CarRental(models.Model):
 class Flight(models.Model):
     name = models.CharField(max_length=150)
     description = models.TextField()
-    start_city = models.ForeignKey('City',models.CASCADE)
-    end_city = models.ForeignKey('City',models.CASCADE)
+    flight_category = models.CharField(max_length=100, blank=True, null=True)
+    start_city = models.ForeignKey(
+        'City',
+        models.CASCADE,
+        related_name='start_flights',  # Custom name for the reverse relation
+        blank=True,
+        null=True
+    )
+    end_city = models.ForeignKey(
+        'City',
+        models.CASCADE,
+        related_name='end_flights',  # Custom name for the reverse relation
+        blank=True,
+        null=True
+
+    )
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     price = models.FloatField()
