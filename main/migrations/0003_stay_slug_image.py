@@ -17,12 +17,4 @@ class Migration(migrations.Migration):
             name='slug',
             field=models.SlugField(blank=True, null=True),
         ),
-        migrations.CreateModel(
-            name='Image',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('image', models.ImageField(blank=True, null=True, upload_to=main.models.slugify_upload)),
-                ('stay', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='main.stay')),
-            ],
-        ),
     ]

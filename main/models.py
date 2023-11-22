@@ -89,7 +89,7 @@ class CarRental(models.Model):
     end_date = models.DateTimeField()
     location = models.ForeignKey('Location', on_delete=models.CASCADE)
     price = models.FloatField()
-    image = models.ImageField(upload_to='media/images/car', blank=True, null=True)
+    image = models.ImageField(upload_to=slugify_upload, blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -102,7 +102,7 @@ class Flight(models.Model):
     end_date = models.DateTimeField()
     price = models.FloatField()
 
-    logo = models.ImageField(upload_to='media/pics/flight', blank=True, null=True)
+    logo = models.ImageField(upload_to=slugify_upload, blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -135,5 +135,5 @@ class HotelAreaInfo(models.Model):
 
 class Image(models.Model):
     stay = models.ForeignKey('Stay', on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='media/pics/stay', blank=True, null=True)
+    image = models.ImageField(upload_to=slugify_upload, blank=True, null=True)
 
