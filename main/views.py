@@ -10,7 +10,12 @@ from main.models import Stay, StayOrder, Flight, FlightOrder, CarRental, CarRent
 from main.serializer import StaysSerializer, StayOrderSerializer, FlightOrderSerializer, FlightSerializer, \
     CarRentalSerializer, CarRentalOrderSerializer
 
+
 User = get_user_model()
+
+from .models import Stay
+from main.serializers import StaySimpleSerializer
+
 
 
 # Create your views here.
@@ -63,6 +68,7 @@ class FlightOrderAPIView(APIView):
         return Response({'success': True, 'data': flight_order_serializer.data}, status=200)
 
 
+
 class CarRentalOrderAPIView(APIView):
     permissions_class = (IsAuthenticated,)
 
@@ -80,3 +86,15 @@ class CarRentalOrderAPIView(APIView):
         car_rental_order.save()
         car_rental_order_serializer = CarRentalOrderSerializer(car_rental_order)
         return Response({'success': True, 'data': car_rental_order_serializer.data}, status=200)
+
+class StayDetailAPIView(APIView):
+    def get(self, request, slug):
+        try:
+            stay = Stay.objects.filter(slug=slug)
+        except Stay.DoesNotExist:
+            return Response({'success: False'}, status=404)
+        stay_serializer = StaySimpleSerializer(stay, many=True)
+        return Response(stay_serializer.data)
+
+
+
