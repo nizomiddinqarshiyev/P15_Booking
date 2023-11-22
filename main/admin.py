@@ -1,5 +1,22 @@
 from django.contrib import admin
-from accounts.models import Role, UserRole
-from .models import Stay, Category, Image
 
-admin.site.register((Stay, Category, Role, UserRole, Image))
+from main.models import (
+    Category,
+    Stay,
+    City,
+    Country,
+    CarRental,
+    Location,
+    CarRentalOrder,
+    Flight,
+    FlightOrder,
+    HotelAreaInfo,
+    Image
+)
+
+admin.site.register((Category, Stay,
+                     City, Country,
+                     CarRental, Location,
+                     CarRentalOrder,
+                     Flight, FlightOrder,
+                     HotelAreaInfo, Image,))

@@ -1,0 +1,51 @@
+version: '3.11'
+
+services:
+  django:
+    build: .
+    container_name: django
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - '8000:8000'
+    volumes:
+      - .:/app
+      - static_volume:/home/PyCharmProjects/P15_booking/static
+      - media_volume:/home/PyCharmProjects/P15_booking/media
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15.3-alpine
+    container_name: db
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgres
+
+volumes:
+  static_volume:
+  media_volume:
+  postgres_data:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,29 +1,31 @@
-from datetime import datetime
-from django.contrib.auth.views import get_user_model
-
-from django.db import models
 from os.path import splitext
 from django.template.defaultfilters import slugify
-from mptt.models import MPTTModel, TreeForeignKey
 
+from django.contrib.auth.views import get_user_model
+from django.db import models
+
+from mptt.models import MPTTModel, TreeForeignKey
 
 User = get_user_model()
 
+
 def slugify_upload(instance, filename):
-    folder = instance._meta.model_name
+    folder = instance._meta__.model_name
     name, ext = splitext(filename)
     name_t = slugify(name) or name
     return f"{folder}/{name_t}{ext}"
 
 
-class Image(models.Model):
-    image = models.ImageField(upload_to=slugify_upload, blank=True, null=True)
-    stay = models.ForeignKey('main.Stay', on_delete=models.CASCADE)
-
-
 class Category(MPTTModel):
     name = models.CharField(max_length=50)
     parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Category'
+        verbose_name_plural = 'Categories'
+
+    def __str__(self):
+        return self.name
 
 
 class Country(models.Model):
@@ -39,7 +41,7 @@ class Country(models.Model):
 
 class City(models.Model):
     name = models.CharField(max_length=50)
-    country_id = models.ForeignKey('Country', on_delete=models.CASCADE)
+    country = models.ForeignKey('Country', on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = 'City'
@@ -55,13 +57,15 @@ class Location(models.Model):
     city = models.ForeignKey('City', on_delete=models.CASCADE)
     country = models.ForeignKey('Country', on_delete=models.CASCADE)
     address = models.CharField(max_length=150)
-    location = models.FloatField()
+
+    def __str__(self):
+        return self.address
 
 
 class Stay(models.Model):
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=250)
-    category_id = models.ForeignKey('Category', on_delete=models.CASCADE)
+    category = models.ForeignKey('Category', on_delete=models.CASCADE)
     location = models.ForeignKey('Location', on_delete=models.CASCADE)
     features = models.TextField(blank=True, null=True)
     slug = models.SlugField(blank=True, null=True)
@@ -74,6 +78,9 @@ class Stay(models.Model):
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
 
+    def __str__(self):
+        return self.name
+
 
 class CarRental(models.Model):
     name = models.CharField(max_length=50)
@@ -82,6 +89,10 @@ class CarRental(models.Model):
     end_date = models.DateTimeField()
     location = models.ForeignKey('Location', on_delete=models.CASCADE)
     price = models.FloatField()
+    image = models.ImageField(upload_to='media/images/car', blank=True, null=True)
+
+    def __str__(self):
+        return self.name
 
 
 class Flight(models.Model):
@@ -90,6 +101,11 @@ class Flight(models.Model):
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     price = models.FloatField()
+
+    logo = models.ImageField(upload_to='media/pics/flight', blank=True, null=True)
+
+    def __str__(self):
+        return self.name
 
 
 class StayOrder(models.Model):
@@ -115,3 +131,9 @@ class HotelAreaInfo(models.Model):
     stay = models.ForeignKey('Stay', on_delete=models.CASCADE)
     category = models.ForeignKey('Category', on_delete=models.CASCADE)
     distance = models.FloatField()
+
+
+class Image(models.Model):
+    stay = models.ForeignKey('Stay', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='media/pics/stay', blank=True, null=True)
+
