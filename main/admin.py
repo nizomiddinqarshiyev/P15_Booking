@@ -14,11 +14,9 @@ from main.models import (
     Image
 )
 
-
 admin.site.register((Category, Stay,
                      City, Country,
                      CarRental, Location,
                      CarRentalOrder,
-                     Flight,FlightOrder,
-                     HotelAreaInfo,Image,))
-# Register your models here.
+                     Flight, FlightOrder,
+                     HotelAreaInfo, Image,))
