@@ -11,4 +11,4 @@ class StayFilter(filters.FilterSet):
 
     class Meta:
         model = Stay
-        fields = ('')
+        fields = ('name', 'slug')

@@ -6,15 +6,15 @@ from main.models import Stay, StayOrder, Flight, FlightOrder, CarRental, CarRent
 class CountrySerializer(serializers.ModelSerializer):
     class Meta:
         model = Country
-        fields = ('name',)
+        fields = ('name', )
 
 
 class CitySerializer(serializers.ModelSerializer):
-    country_id = CountrySerializer()
+    country = CountrySerializer()
 
     class Meta:
         model = City
-        fields = ('name', 'country_id')
+        fields = ('name', 'country')
 
 
 class LocationSerializer(serializers.ModelSerializer):
