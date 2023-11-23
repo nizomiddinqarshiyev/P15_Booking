@@ -1,5 +1,7 @@
 from django.db.models import Q
 from rest_framework.generics import CreateAPIView, GenericAPIView
+
+from .custom_filters import StayFilter
 from .permissions import AdminPermission
 from django.http import JsonResponse
 from rest_framework.permissions import IsAuthenticated
@@ -9,6 +11,7 @@ from django.contrib.auth.views import get_user_model
 from main.models import Stay, StayOrder, Flight, FlightOrder, CarRental, CarRentalOrder, Location, Image
 from main.serializer import StaysSerializer, StayOrderSerializer, FlightOrderSerializer, FlightSerializer, \
     CarRentalSerializer, CarRentalOrderSerializer
+from django_filters import rest_framework as filters
 
 User = get_user_model()
 
@@ -101,6 +104,14 @@ class CreateStayAPIView(CreateAPIView):
     queryset = Stay.objects.all()
     permission_classes = (AdminPermission,)
     serializer_class = StaysSerializer
+
+
+class StayFilterView(GenericAPIView):
+    queryset = Stay.objects.all()
+    permission_classes = ()
+    serializer_class = StaysSerializer
+    filter_backends = (filters.DjangoFilterBackend,)
+    filters_set = StayFilter
 
 
 class CarRentalOrderAPIView(APIView):
