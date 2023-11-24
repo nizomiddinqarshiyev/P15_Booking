@@ -1,17 +1,17 @@
 from django.db.models import Q
-from rest_framework.generics import CreateAPIView, GenericAPIView
+from rest_framework.generics import CreateAPIView, GenericAPIView, ListAPIView
 
-from .custom_filters import StayFilter
+from django.db.models import Q
 from .permissions import AdminPermission
 from django.http import JsonResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth.views import get_user_model
-from main.models import Stay, StayOrder, Flight, FlightOrder, CarRental, CarRentalOrder, Location, Image
+from main.models import Stay, StayOrder, Flight, FlightOrder, CarRental, CarRentalOrder, Location, Image, Category
 from main.serializer import StaysSerializer, StayOrderSerializer, FlightOrderSerializer, FlightSerializer, \
-    CarRentalSerializer, CarRentalOrderSerializer
-from django_filters import rest_framework as filters
+    CarRentalSerializer, CarRentalOrderSerializer, StaySerializerForFilter
+from drf_yasg.utils import swagger_auto_schema
 
 User = get_user_model()
 
@@ -106,12 +106,39 @@ class CreateStayAPIView(CreateAPIView):
     serializer_class = StaysSerializer
 
 
+# class StayFilterView(ListAPIView):
+#     queryset = Stay.objects.all()
+#     serializer_class = StaysSerializer
+#     permission_classes = ()
+#     filter_backends = (filters.DjangoFilterBackend,)
+#     filters_set = StayFilter
+
 class StayFilterView(GenericAPIView):
-    queryset = Stay.objects.all()
     permission_classes = ()
     serializer_class = StaysSerializer
-    filter_backends = (filters.DjangoFilterBackend,)
-    filters_set = StayFilter
+
+    @swagger_auto_schema(query_serializer=StaySerializerForFilter)
+    def get(self, request):
+        rate = request.GET.get('high_rate', 10)
+        name = request.GET.get('name', '')
+        category = request.GET.get('home_and_apartment', '')
+
+        rate_query = Q(property_rate_stars=rate)
+
+        if name == '':
+            name_query = Q()
+        else:
+            name_query = Q(name__icontains=name)
+        if category == '':
+            category_query = Q()
+        else:
+            category_query = Category.objects.get()
+            print('IDDD', category_query)
+
+        q = rate_query & name_query & category_query
+        stays = Stay.objects.filter(q)
+        stay_serializer = StaysSerializer(stays, many=True)
+        return Response(stay_serializer.data)
 
 
 class CarRentalOrderAPIView(APIView):
@@ -173,8 +200,3 @@ class FlightOrderAPIView(APIView):
         flight_order.save()
         flight_order_serializer = FlightOrderSerializer(flight_order)
         return Response({'success': True, 'data': flight_order_serializer.data}, status=200)
-
-
-
-
-
