@@ -4,11 +4,11 @@ from main.models import Stay, StayOrder, Flight, FlightOrder, CarRental, CarRent
     Category
 
 
-class StaySerializerForFilter(serializers.Serializer):
+class StaySerializerFilter(serializers.Serializer):
+    recommend = serializers.CharField(required=False)
     name = serializers.CharField(required=False)
-    category = serializers.CharField(required=False)
-    high_rate = serializers.IntegerField(required=False)
-    low_rate = serializers.IntegerField(required=False)
+    category_name = serializers.CharField(required=False)
+    rate = serializers.IntegerField(required=False)
 
 
 class CategorySerializer(serializers.ModelSerializer):

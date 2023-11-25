@@ -1,5 +1,5 @@
 from django.db.models import Q
-from rest_framework.generics import CreateAPIView, GenericAPIView, ListAPIView
+from rest_framework.generics import CreateAPIView, GenericAPIView
 
 from django.db.models import Q
 from .permissions import AdminPermission
@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 from django.contrib.auth.views import get_user_model
 from main.models import Stay, StayOrder, Flight, FlightOrder, CarRental, CarRentalOrder, Location, Image, Category
 from main.serializer import StaysSerializer, StayOrderSerializer, FlightOrderSerializer, FlightSerializer, \
-    CarRentalSerializer, CarRentalOrderSerializer, StaySerializerForFilter
+    CarRentalSerializer, CarRentalOrderSerializer, StaySerializerFilter
 from drf_yasg.utils import swagger_auto_schema
 
 User = get_user_model()
@@ -106,39 +106,36 @@ class CreateStayAPIView(CreateAPIView):
     serializer_class = StaysSerializer
 
 
-# class StayFilterView(ListAPIView):
-#     queryset = Stay.objects.all()
-#     serializer_class = StaysSerializer
-#     permission_classes = ()
-#     filter_backends = (filters.DjangoFilterBackend,)
-#     filters_set = StayFilter
-
 class StayFilterView(GenericAPIView):
     permission_classes = ()
     serializer_class = StaysSerializer
+    queryset = Stay.objects.all()
 
-    @swagger_auto_schema(query_serializer=StaySerializerForFilter)
+    @swagger_auto_schema(query_serializer=StaySerializerFilter)
     def get(self, request):
-        rate = request.GET.get('high_rate', 10)
-        name = request.GET.get('name', '')
-        category = request.GET.get('home_and_apartment', '')
+        name = self.request.query_params.get('name', '')
+        recommend = self.request.query_params.get('recommendation', '')
+        category_name = self.request.query_params.get('category_name', '')
+        rate = self.request.query_params.get('rate', None)
 
-        rate_query = Q(property_rate_stars=rate)
+        filters = Q()
 
-        if name == '':
-            name_query = Q()
-        else:
-            name_query = Q(name__icontains=name)
-        if category == '':
-            category_query = Q()
-        else:
-            category_query = Category.objects.get()
-            print('IDDD', category_query)
+        if name:
+            filters &= Q(name__icontains=name)
 
-        q = rate_query & name_query & category_query
-        stays = Stay.objects.filter(q)
-        stay_serializer = StaysSerializer(stays, many=True)
-        return Response(stay_serializer.data)
+        if recommend:
+            filters &= Stay.objects.filter(property_rate_stars__gte=6)
+
+        if category_name:
+            filters &= Q(category__name__icontains=category_name)
+
+        if rate is not None:
+            filters &= Q(property_rate_stars=rate)
+
+        stays = self.queryset.filter(filters)
+
+        serializer = StaysSerializer(stays, many=True)
+        return Response(serializer.data)
 
 
 class CarRentalOrderAPIView(APIView):

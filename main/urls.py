@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import (StayAPIView, UpdateStayAPIView, CreateStayAPIView, StayFilterView, HomeAPIView,
+from .views import (StayAPIView, CreateStayAPIView, UpdateStayAPIView, StayFilterView, HomeAPIView,
                     StaysOrderAPIView,
                     FlightOrderAPIView,
                     CarRentalOrderAPIView
