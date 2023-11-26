@@ -1,3 +1,5 @@
+import datetime
+
 from django.db.models import Q
 from rest_framework.generics import CreateAPIView, GenericAPIView
 from .permissions import AdminPermission
@@ -6,9 +8,22 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth.views import get_user_model
-from main.models import Stay, StayOrder, Flight, FlightOrder, CarRental, CarRentalOrder, Location, Image
-from main.serializer import StaysSerializer, StayOrderSerializer, FlightOrderSerializer, FlightSerializer, \
-    CarRentalSerializer, CarRentalOrderSerializer
+from main.models import (
+    Stay, StayOrder,
+    Flight, FlightOrder,
+    CarRental, CarRentalOrder,
+    Location, Image,
+    Comment
+)
+from main.serializer import (
+    StaysSerializer,
+    StayOrderSerializer,
+    FlightOrderSerializer,
+    FlightSerializer,
+    CarRentalSerializer,
+    CarRentalOrderSerializer,
+    CommentSerializer
+)
 
 User = get_user_model()
 
@@ -164,6 +179,66 @@ class FlightOrderAPIView(APIView):
         return Response({'success': True, 'data': flight_order_serializer.data}, status=200)
 
 
+class CommentAPIView(GenericAPIView):
+
+    def get(self, request, pk):
+        stay = Stay.objects.get(pk=pk)
+        comments = Comment.objects.filter(stay=stay)
+        comment_serializer = CommentSerializer(comments, many=True)
+        print(comment_serializer)
+        return Response(comment_serializer.data)
 
 
+class CreateCommentAPIView(GenericAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = CommentSerializer
 
+    def post(self, request, pk):
+        stay = Stay.objects.get(pk=pk)
+        comment = request.data.get('comment')
+        rate = request.data.get('rate')
+        user_comment = Comment.objects.get(Q(user=request.user) & Q(stay=stay))
+        if not user_comment:
+            comments = Comment.objects.create(
+                comment=comment,
+                rate=rate,
+                created_at=datetime.datetime.now(),
+                user=request.user,
+                stay=stay
+            )
+        else:
+            comments = Comment.objects.create(
+                comment=comment,
+                rate=user_comment.rate,
+                created_at=datetime.datetime.now(),
+                user=request.user,
+                stay=stay
+            )
+        comments.save()
+        comment_serializer = CommentSerializer(comments)
+        return JsonResponse(comment_serializer.data)
+
+
+class CommentUpdateAPIView(GenericAPIView):
+    permission_classes = (IsAuthenticated, )
+    serializer_class = CommentSerializer
+
+    def patch(self, request, pk):
+        comment_data = Comment.objects.get(Q(user=request.user) & Q(pk=pk))
+        comment_rate = Comment.objects.filter(Q(user=request.user) & Q(stay=comment_data.stay))
+        comment = request.data.get('comment')
+        rate = request.data.get('rate')
+        print(comment_rate)
+
+        if comment:
+            comment_data.comment = comment
+            comment_data.save()
+        if rate:
+            comment_rate.update(rate=rate)
+
+        comment_serializer = CommentSerializer(comment_data)
+        return Response(comment_serializer.data)
+
+    def delete(self, request, pk):
+        Comment.objects.get(Q(user=request.user) & Q(pk=pk)).delete()
+        return Response(status=204)

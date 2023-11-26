@@ -1,6 +1,12 @@
 from rest_framework import serializers
 
-from main.models import Stay, StayOrder, Flight, FlightOrder, CarRental, CarRentalOrder, Country, City, Location
+from main.models import (
+    Stay, StayOrder,
+    Flight, FlightOrder,
+    CarRental, CarRentalOrder,
+    Country, City,
+    Location, Comment
+)
 
 
 class CountrySerializer(serializers.ModelSerializer):
@@ -61,3 +67,9 @@ class CarRentalOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = CarRentalOrder
         fields = '__all__'
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ('rate', 'comment')

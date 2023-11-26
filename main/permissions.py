@@ -1,6 +1,7 @@
 from rest_framework import permissions
 
 from accounts.models import UserRole
+from main.models import StayOrder
 
 
 class AdminPermission(permissions.BasePermission):
@@ -10,3 +11,4 @@ class AdminPermission(permissions.BasePermission):
             return user_role == 'admin'
         except UserRole.DoesNotExist:
             return False
+
