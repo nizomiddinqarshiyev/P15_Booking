@@ -157,7 +157,7 @@ class StaysOrderAPIView(APIView):
 
 
 class FlightOrderAPIView(APIView):
-    permissions_class = (IsAuthenticated,)
+    permissions_class = (IsAuthenticated, )
 
     def get(self, request, pk):
         flight = Flight.objects.get(pk=pk)
