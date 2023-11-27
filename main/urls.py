@@ -29,4 +29,7 @@ urlpatterns = [
 =======
 
 ]
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

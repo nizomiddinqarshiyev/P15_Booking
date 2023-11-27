@@ -71,8 +71,12 @@ class Stay(models.Model):
     slug = models.SlugField(blank=True, null=True)
     price = models.FloatField()
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     property_rate_stars = models.FloatField()
     rate = models.FloatField(null=True, blank=True)
+=======
+    # property_rate_stars = models.IntegerField()
+>>>>>>> Stashed changes
 =======
     # property_rate_stars = models.IntegerField()
 >>>>>>> Stashed changes
