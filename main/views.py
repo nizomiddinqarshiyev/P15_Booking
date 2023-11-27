@@ -1,8 +1,12 @@
 import datetime
 
+from django_elasticsearch_dsl_drf.constants import SUGGESTER_COMPLETION
 from rest_framework.generics import CreateAPIView, GenericAPIView
 
 from django.db.models import Q
+from rest_framework.pagination import PageNumberPagination
+
+from .documents import DocumentBlog
 from .permissions import AdminPermission
 from django.http import JsonResponse
 from rest_framework.permissions import IsAuthenticated
@@ -10,14 +14,86 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth.views import get_user_model
 
-from main.models import Stay, StayOrder, Flight, FlightOrder, CarRental, CarRentalOrder, Location, Image, Category, Comment
-from main.serializer import StaysSerializer, StayOrderSerializer, FlightOrderSerializer, FlightSerializer, \
-    CarRentalSerializer, CarRentalOrderSerializer, StaySerializerFilter, CommentSerializer, QueryStaySerializer, \
-    QueryFlightSerializer
-from drf_yasg.utils import swagger_auto_schema
 
+from .models import Stay, StayOrder, Flight, FlightOrder, CarRental, CarRentalOrder, Location, Image, Comment
+from .serializer import (
+    StaysSerializer, StayOrderSerializer, FlightOrderSerializer, FlightSerializer,
+    CarRentalSerializer, CarRentalOrderSerializer, StaySerializerFilter, CommentSerializer, QueryStaySerializer,
+    QueryFlightSerializer, BlogDocumentSerializer
+)
+
+from drf_yasg.utils import swagger_auto_schema
+from django_elasticsearch_dsl_drf.viewsets import DocumentViewSet
+from django_elasticsearch_dsl_drf.filter_backends import (
+    FilteringFilterBackend,
+    SearchFilterBackend,
+    SuggesterFilterBackend,
+)
 
 User = get_user_model()
+
+class CustomPageNumberPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
+class TodoSearchViewSet(DocumentViewSet):
+    document = DocumentBlog
+    serializer_class = BlogDocumentSerializer
+    pagination_class = CustomPageNumberPagination
+
+    filter_backends = [
+        FilteringFilterBackend,
+        SearchFilterBackend,
+        SuggesterFilterBackend,
+    ]
+
+    search_fields = (
+        'title',
+        'slug',
+        'description',
+    )
+
+    filter_fields = {
+        'title': 'title',
+        'slug': 'slug',
+        'description': 'description',
+    }
+
+    suggester_fields = {
+        'title': {
+            'field': 'title.suggest',
+            'suggesters': [
+                SUGGESTER_COMPLETION,
+            ],
+        },
+        'slug': {
+            'field': 'slug.suggest',
+            'suggesters': [
+                SUGGESTER_COMPLETION,
+            ],
+        },
+    }
+
+    def list(self, request, *args, **kwargs):
+        search_term = self.request.query_params.get('search', '')
+
+        # Use a Q object to build a more robust query
+        query = Q('multi_match', query=search_term, fields=self.search_fields)
+
+        # Apply the query to the queryset
+        queryset = self.filter_queryset(self.get_queryset().query(query))
+        print('Queryset >>>>>', queryset)
+
+        # Perform pagination
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class HomeAPIView(APIView):

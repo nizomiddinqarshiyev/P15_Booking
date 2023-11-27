@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_filters',
     'drf_yasg',
 
     # custom
@@ -54,6 +53,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'django_elasticsearch_dsl',
+    'django_elasticsearch_dsl_drf',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -135,13 +136,13 @@ REST_FRAMEWORK = {
     )
 }
 
-ELASTIC_SEARCH_DSL = {
+ELASTICSEARCH_DSL = {
     'default': {
       'hosts': 'http://elasticsearch:9200'
     }
 }
 
-connections.create_connection(host=['http://elasticsearch:9200'])
+connections.create_connection(hosts=['http://elasticsearch:9200'])
 ELASTIC_SEARCH_INDEX_NAMES = {
     'main.DocumentBook': 'main'
 }
@@ -198,6 +199,17 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
+
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_TIMEZONE = TIME_ZONE
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'qarshiyevnizomiddin75@gmail.com'
+EMAIL_HOST_PASSWORD = 'hxcleicnkqftuqjc'
 
 STATIC_URL = 'static/'
 MEDIA_URL = 'media/'
