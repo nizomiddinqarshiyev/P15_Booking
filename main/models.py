@@ -143,3 +143,29 @@ class Comment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     stay = models.ForeignKey(Stay, on_delete=models.CASCADE, blank=True, null=True)
+
+
+class Blog(models.Model):
+    title = models.CharField(max_length=150)
+    slug = models.SlugField(blank=True, null=True)
+    description = models.TextField()
+    expires_at = models.DateTimeField(auto_now_add=True)
+
+    def save(
+        self, *args, **kwargs
+    ):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title
+
+
+class Subscriber(models.Model):
+    email = models.EmailField()
+    subscribed_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.email
+

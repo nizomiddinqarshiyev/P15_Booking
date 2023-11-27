@@ -43,26 +43,26 @@ class SignupAPIView(GenericAPIView):
             return Response({'success': False, 'error': 'Error password'})
 
 
-class LoginAPIVew(GeneratorExit):
-    serializer_class = LoginSerializer
+# class LoginAPIVew(GeneratorExit):
+#     serializer_class = LoginSerializer
+#
+#     def post(self, request):
+#         username = request.POST.get('username')
+#         password = request.POST.get('password')
+#         user = authenticate(username=username, password=password)
+#
+#         if user is not None:
+#             login(request, user)
+#             return Response({'success': True}, )
+#         else:
+#             return Response({'success': False, 'error': 'Username or password invalid !!!'})
 
-    def post(self, request):
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        user = authenticate(username=username, password=password)
 
-        if user is not None:
-            login(request, user)
-            return Response({'success': True}, )
-        else:
-            return Response({'success': False, 'error': 'Username or password invalid !!!'})
-
-
-class LogoutAPIVew(GeneratorExit):
-
-    def get(self, request):
-        logout(request)
-        return Response()
+# class LogoutAPIVew(GeneratorExit):
+#
+#     def get(self, request):
+#         logout(request)
+#         return Response()
 
 
 
