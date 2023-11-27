@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth.views import get_user_model
 
-from main.models import Stay, StayOrder, Flight, FlightOrder, CarRental, CarRentalOrder, Location, Image, Category, Comment
+from main.models import Stay, StayOrder, Flight, FlightOrder, CarRental, CarRentalOrder, Location, Image, Comment
 from main.serializer import StaysSerializer, StayOrderSerializer, FlightOrderSerializer, FlightSerializer, \
     CarRentalSerializer, CarRentalOrderSerializer, StaySerializerFilter, CommentSerializer
 from drf_yasg.utils import swagger_auto_schema
@@ -32,6 +32,8 @@ class StayAPIView(GenericAPIView):
     def get(self, request, pk):
         location = Location.objects.get(pk=pk)
         base = Stay.objects.filter(location=location)
+        comment = Comment.objects.filter(stay=base)
+        rate = sum(list(map(lambda t: t.rate, comment)))/len(comment)
         image_data = []
         for stay in base:
             img = Image.objects.filter(stay=stay).first()
@@ -43,7 +45,8 @@ class StayAPIView(GenericAPIView):
         serializer_data = StaysSerializer(base, many=True).data
         response_data = {
             'stay_info': serializer_data,
-            'images': image_data
+            'images': image_data,
+            'rate': rate
         }
 
         return Response(response_data)
