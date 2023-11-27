@@ -16,6 +16,7 @@ from dotenv import load_dotenv
 
 from datetime import timedelta
 
+from elasticsearch_dsl.connections import connections
 from pip._internal.cli.spinners import open_spinner
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -42,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_filters',
     'drf_yasg',
 
     # custom
@@ -51,6 +53,7 @@ INSTALLED_APPS = [
     # third-party
     'rest_framework',
     'rest_framework_simplejwt',
+    'django_elasticsearch_dsl',
 ]
 
 MIDDLEWARE = [
@@ -89,11 +92,11 @@ WSGI_APPLICATION = 'DjangoRestAPIBooking.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
+        'NAME': os.environ.get('DJANGO_DB_NAME'),
+        'USER': os.environ.get('DJANGO_DB_USER'),
+        'PASSWORD': os.environ.get('DJANGO_DB_PASSWORD'),
+        'HOST': os.environ.get('DJANGO_DB_HOST'),
+        'PORT': os.environ.get('DJANGO_DB_PORT'),
     }
 }
 
@@ -132,7 +135,16 @@ REST_FRAMEWORK = {
     )
 }
 
+ELASTIC_SEARCH_DSL = {
+    'default': {
+      'hosts': 'http://elasticsearch:9200'
+    }
+}
 
+connections.create_connection(host=['http://elasticsearch:9200'])
+ELASTIC_SEARCH_INDEX_NAMES = {
+    'main.DocumentBook': 'main'
+}
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=20),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),

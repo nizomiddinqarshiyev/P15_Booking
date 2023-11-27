@@ -1,12 +1,20 @@
 from rest_framework import serializers
 
-from main.models import (
-    Stay, StayOrder,
-    Flight, FlightOrder,
-    CarRental, CarRentalOrder,
-    Country, City,
-    Location, Comment
-)
+from main.models import Stay, StayOrder, Flight, FlightOrder, CarRental, CarRentalOrder, Country, City, Location, \
+    Category, Comment
+
+
+class StaySerializerFilter(serializers.Serializer):
+    recommend = serializers.CharField(required=False)
+    name = serializers.CharField(required=False)
+    category_name = serializers.CharField(required=False)
+    rate = serializers.IntegerField(required=False)
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ('name',)
 
 
 class CountrySerializer(serializers.ModelSerializer):
@@ -16,11 +24,11 @@ class CountrySerializer(serializers.ModelSerializer):
 
 
 class CitySerializer(serializers.ModelSerializer):
-    country_id = CountrySerializer()
+    country = CountrySerializer()
 
     class Meta:
         model = City
-        fields = ('name', 'country_id')
+        fields = ('name', 'country')
 
 
 class LocationSerializer(serializers.ModelSerializer):
@@ -33,6 +41,7 @@ class LocationSerializer(serializers.ModelSerializer):
 
 class StaysSerializer(serializers.ModelSerializer):
     location = LocationSerializer()
+    category = CategorySerializer()
 
     class Meta:
         model = Stay

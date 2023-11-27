@@ -10,7 +10,7 @@ User = get_user_model()
 
 
 def slugify_upload(instance, filename):
-    folder = instance._meta__.model_name
+    folder = instance._meta.model_name
     name, ext = splitext(filename)
     name_t = slugify(name) or name
     return f"{folder}/{name_t}{ext}"
@@ -71,6 +71,7 @@ class Stay(models.Model):
     slug = models.SlugField(blank=True, null=True)
     price = models.FloatField()
     property_rate_stars = models.FloatField()
+    rate = models.FloatField(null=True, blank=True)
     level = models.IntegerField(default=0)
 
     def save(self, *args, **kwargs):

@@ -1,29 +1,20 @@
 import datetime
 
-from django.db.models import Q
 from rest_framework.generics import CreateAPIView, GenericAPIView
+
+from django.db.models import Q
 from .permissions import AdminPermission
 from django.http import JsonResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth.views import get_user_model
-from main.models import (
-    Stay, StayOrder,
-    Flight, FlightOrder,
-    CarRental, CarRentalOrder,
-    Location, Image,
-    Comment
-)
-from main.serializer import (
-    StaysSerializer,
-    StayOrderSerializer,
-    FlightOrderSerializer,
-    FlightSerializer,
-    CarRentalSerializer,
-    CarRentalOrderSerializer,
-    CommentSerializer
-)
+
+from main.models import Stay, StayOrder, Flight, FlightOrder, CarRental, CarRentalOrder, Location, Image, Category, Comment
+from main.serializer import StaysSerializer, StayOrderSerializer, FlightOrderSerializer, FlightSerializer, \
+    CarRentalSerializer, CarRentalOrderSerializer, StaySerializerFilter, CommentSerializer
+from drf_yasg.utils import swagger_auto_schema
+
 
 User = get_user_model()
 
@@ -118,6 +109,38 @@ class CreateStayAPIView(CreateAPIView):
     serializer_class = StaysSerializer
 
 
+class StayFilterView(GenericAPIView):
+    permission_classes = ()
+    serializer_class = StaysSerializer
+    queryset = Stay.objects.all()
+
+    @swagger_auto_schema(query_serializer=StaySerializerFilter)
+    def get(self, request):
+        name = self.request.query_params.get('name', '')
+        recommend = self.request.query_params.get('recommendation', '')
+        category_name = self.request.query_params.get('category_name', '')
+        rate = self.request.query_params.get('rate', None)
+
+        filters = Q()
+
+        if name:
+            filters &= Q(name__icontains=name)
+
+        if recommend:
+            filters &= Stay.objects.filter(property_rate_stars__gte=6)
+
+        if category_name:
+            filters &= Q(category__name__icontains=category_name)
+
+        if rate is not None:
+            filters &= Q(property_rate_stars=rate)
+
+        stays = self.queryset.filter(filters)
+
+        serializer = StaysSerializer(stays, many=True)
+        return Response(serializer.data)
+
+
 class CarRentalOrderAPIView(APIView):
     permissions_class = (IsAuthenticated,)
 
@@ -161,7 +184,7 @@ class StaysOrderAPIView(APIView):
 
 
 class FlightOrderAPIView(APIView):
-    permissions_class = (IsAuthenticated,)
+    permissions_class = (IsAuthenticated, )
 
     def get(self, request, pk):
         flight = Flight.objects.get(pk=pk)
