@@ -11,7 +11,8 @@ from main.models import (
     Flight,
     FlightOrder,
     HotelAreaInfo,
-    Image
+    Image,
+    Comment
 )
 
 admin.site.register((Category, Stay,
@@ -19,4 +20,4 @@ admin.site.register((Category, Stay,
                      CarRental, Location,
                      CarRentalOrder,
                      Flight, FlightOrder,
-                     HotelAreaInfo, Image,))
+                     HotelAreaInfo, Image, Comment))

@@ -1,43 +1,50 @@
 from django.contrib.auth import get_user_model
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from django.contrib.auth import hashers, login, logout, authenticate
-from .serializer import UserSerializer
+from rest_framework.generics import GenericAPIView
+from rest_framework.response import Response
+from accounts.serializer import UserSerializer, LoginSerializer
+from accounts.subscriber import send_mail
 
 User = get_user_model()
 
 
-class SignupAPIView(APIView):
+class SignupAPIView(GenericAPIView):
+    serializer_class = UserSerializer
 
     def post(self, request):
-        firstname = request.POST.get('firstname')
-        lastname = request.POST.get('lastname')
-        username = request.POST.get('username')
-        email = request.POST.get('email')
-        password1 = request.POST.get('password1')
-        password2 = request.POST.get('password2')
+        first_name = request.data.get('first_name')
+        last_name = request.data.get('last_name')
+        username = request.data.get('username')
+        email = request.data.get('email')
+        password1 = request.data.get('password1')
+        password2 = request.data.get('password2')
 
         if password1 == password2:
             if User.objects.filter(username=username).exists():
-                return Response({'success': False, 'error': 'Username already exists !'}, status=400)
+                return Response({'success': False, 'error': 'Error username'})
             if User.objects.filter(email=email).exists():
-                return Response({'success': False, 'error': 'Email already exists !'}, status=400)
+                return Response({'success': False, 'error': 'Error email'})
+            code = send_mail(email)
+            active_code = input('Active code >>> ')
+            if active_code != code:
+                return Response({'success': False, 'error': 'Error code'})
 
-            user = User.objects.create_user(
-                first_name=firstname,
-                last_name=lastname,
+            user = User.objects.create(
+                first_name=first_name,
+                last_name=last_name,
                 username=username,
                 email=email,
-                password=password1
+                password=hashers.make_password(password2)
             )
+            user.save()
             user_serializer = UserSerializer(user)
             return Response({'success': True, 'data': user_serializer.data})
-
         else:
-            return Response({'success': False, 'error': 'Passwords are not same !!!'})
+            return Response({'success': False, 'error': 'Error password'})
 
 
-class LoginAPIVew(APIView):
+class LoginAPIVew(GeneratorExit):
+    serializer_class = LoginSerializer
 
     def post(self, request):
         username = request.POST.get('username')
@@ -51,7 +58,7 @@ class LoginAPIVew(APIView):
             return Response({'success': False, 'error': 'Username or password invalid !!!'})
 
 
-class LogoutAPIVew(APIView):
+class LogoutAPIVew(GeneratorExit):
 
     def get(self, request):
         logout(request)
