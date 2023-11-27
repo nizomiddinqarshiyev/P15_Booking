@@ -5,7 +5,6 @@ from .views import (StayAPIView, UpdateStayAPIView, CreateStayAPIView, StayFilte
                     CarRentalOrderAPIView
 )
 
-
 urlpatterns = [
     path('', HomeAPIView.as_view(), name='home'),
     path('stay-order/<int:pk>', StaysOrderAPIView.as_view(), name='stay_order'),
@@ -20,4 +19,3 @@ urlpatterns = [
     path('car-rental<int:pk>', CarRentalOrderAPIView.as_view(), name='car_rental_order'),
 
 ]
-

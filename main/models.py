@@ -70,7 +70,7 @@ class Stay(models.Model):
     features = models.TextField(blank=True, null=True)
     slug = models.SlugField(blank=True, null=True)
     price = models.FloatField()
-    property_rate_stars = models.IntegerField()
+    # property_rate_stars = models.IntegerField()
     level = models.IntegerField(default=0)
 
     def save(self, *args, **kwargs):
