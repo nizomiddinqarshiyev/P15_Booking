@@ -12,7 +12,8 @@ from django.contrib.auth.views import get_user_model
 
 from main.models import Stay, StayOrder, Flight, FlightOrder, CarRental, CarRentalOrder, Location, Image, Category, Comment
 from main.serializer import StaysSerializer, StayOrderSerializer, FlightOrderSerializer, FlightSerializer, \
-    CarRentalSerializer, CarRentalOrderSerializer, StaySerializerFilter, CommentSerializer
+    CarRentalSerializer, CarRentalOrderSerializer, StaySerializerFilter, CommentSerializer, QueryStaySerializer, \
+    QueryFlightSerializer
 from drf_yasg.utils import swagger_auto_schema
 
 
@@ -141,6 +142,61 @@ class StayFilterView(GenericAPIView):
         return Response(serializer.data)
 
 
+class StaysOrderAPIView(APIView):
+    permissions_class = (IsAuthenticated,)
+
+    def get(self, request, pk):
+        stay = Stay.objects.get(pk=pk)
+        stay_serializer = StaysSerializer(stay)
+        return Response(stay_serializer.data)
+
+    def post(self, request, pk):
+        if not StayOrder.objects.get(Q(user=request.user) & Q(stay=pk)):
+            stay_order = StayOrder.objects.create(
+                user=request.user,
+                stay=pk
+            )
+            stay_order.save()
+        else:
+            return Response({'success': False, 'error': 'stay already exists !'})
+        stay_order_serializer = StayOrderSerializer(stay_order)
+        return Response({'success': True, 'data': stay_order_serializer.data}, status=200)
+
+    def delete(self, request, pk):
+        StayOrder.objects.get(pk=pk).delete()
+        return Response(status=204)
+
+
+class FlightOrderAPIView(APIView):
+    permissions_class = (IsAuthenticated,)
+
+    def get(self, request, pk):
+        flight_category = request.GET.get('flight_category', None)
+        flight = None
+        if flight_category:
+            flight = Flight.objects.get(Q(pk=pk) & Q(flight_category=flight_category))
+        else:
+            flight = Flight.objects.get(pk=pk)
+        flight_serializer = FlightSerializer(flight)
+        return Response(flight_serializer.data)
+
+    def post(self, request, pk):
+        if not FlightOrder.objects.get(Q(user=request.user) & Q(flight=pk)):
+            flight_order = FlightOrder.objects.create(
+                user=request.user,
+                flight=pk
+            )
+            flight_order.save()
+        else:
+            return Response({'success': False, 'error': 'flight already exists !'})
+        flight_order_serializer = FlightOrderSerializer(flight_order)
+        return Response({'success': True, 'data': flight_order_serializer.data}, status=200)
+
+    def delete(self, request, pk):
+        FlightOrder.objects.get(pk=pk).delete()
+        return Response(status=204)
+
+
 class CarRentalOrderAPIView(APIView):
     permissions_class = (IsAuthenticated,)
 
@@ -150,56 +206,67 @@ class CarRentalOrderAPIView(APIView):
         return Response(car_rental_serializer.data)
 
     def post(self, request, pk):
-        user = User.objects.get(user=request.user)
-        car_rental_order = CarRentalOrder.objects.create(
-            user_id=user,
-            flight_id=pk
-        )
-        car_rental_order.save()
+        if not CarRentalOrder.objects.get(Q(user=request.user)&Q(car_rental=pk)):
+            car_rental_order = CarRentalOrder.objects.create(
+                user=request.user,
+                car_rental=pk
+            )
+            car_rental_order.save()
+        else:
+            return Response({'success': False, 'error': 'car_rental already exists !'})
         car_rental_order_serializer = CarRentalOrderSerializer(car_rental_order)
         return Response({'success': True, 'data': car_rental_order_serializer.data}, status=200)
 
+    def delete(self, request, pk):
+        CarRentalOrder.objects.get(pk=pk).delete()
+        return Response(status=204)
 
-class StaysOrderAPIView(APIView):
-    permissions_class = (IsAuthenticated,)
 
-    def get(self, request, pk):
-        stays_order = StayOrder.objects.get(pk=pk)
-        stay = Stay.objects.get(pk=stays_order.stay_id)
-        stay_serializer = StaysSerializer(stay)
+class StaySearchView(GenericAPIView):
+    permission_classes = ()
+    serializer_class = StaysSerializer
+
+    @swagger_auto_schema(query_serializer=QueryStaySerializer)
+    def get(self, request):
+        city_or_country = request.GET.get('city_or_country')
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+        stay_adults = request.GET.get('stay_Adults')
+        stay_children = request.GET.get('stay_Children')
+        stay_room = request.GET.get('stay_Room')
+        data_stays = Stay.objects.filter(
+            Q(location__city__name__icontains=city_or_country) |
+            Q(location__country__name__icontains=city_or_country) |
+            Q(start_date=start_date, end_date=end_date) |
+            Q(stay_Adults=stay_adults, stay_Children=stay_children, stay_Room=stay_room)
+        ).values('id')
+        stays = Stay.objects.filter(id__in=data_stays)
+        stay_serializer = StaysSerializer(stays, many=True)
+        if not stays:
+            return Response({'error': 'Stay not fount !'}, status=404)
         return Response(stay_serializer.data)
 
-    def post(self, request, pk):
-        stay = Stay.objects.get(id=pk)
-        if StayOrder.objects.filter(Q(user=request.user) & Q(stay=stay)):
-            return Response({'message': 'This order already added'})
-        else:
-            stay_order = StayOrder.objects.create(
-                user=request.user,
-                stay=stay
-            )
-            stay_order.save()
-            stay_order_serializer = StayOrderSerializer(stay_order)
-            return Response({'success': True, 'data': stay_order_serializer.data}, status=200)
 
+class FlightSearchView(GenericAPIView):
+    permission_classes = ()
+    serializer_class = FlightSerializer
 
-class FlightOrderAPIView(APIView):
-    permissions_class = (IsAuthenticated, )
-
-    def get(self, request, pk):
-        flight = Flight.objects.get(pk=pk)
-        flight_serializer = FlightSerializer(flight)
+    @swagger_auto_schema(query_serializer=QueryFlightSerializer)
+    def get(self, request):
+        start_city = request.GET.get('start_city')
+        end_city = request.GET.get('end_city')
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+        data_flight = Flight.objects.filter(
+            Q(start_city__name__icontains=start_city) &
+            Q(end_city__name__icontains=end_city) |
+            Q(start_date=start_date, end_date=end_date)
+        ).values('id')
+        flight = Flight.objects.filter(id__in=data_flight)
+        flight_serializer = FlightSerializer(flight, many=True)
+        if not flight:
+            return Response({'error': 'Flight not fount !'}, status=404)
         return Response(flight_serializer.data)
-
-    def post(self, request, pk):
-        user = User.objects.get(user=request.user)
-        flight_order = FlightOrder.objects.create(
-            user_id=user,
-            flight_id=pk
-        )
-        flight_order.save()
-        flight_order_serializer = FlightOrderSerializer(flight_order)
-        return Response({'success': True, 'data': flight_order_serializer.data}, status=200)
 
 
 class CommentAPIView(GenericAPIView):

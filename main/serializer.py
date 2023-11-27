@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from rest_framework import serializers
 
 from main.models import Stay, StayOrder, Flight, FlightOrder, CarRental, CarRentalOrder, Country, City, Location, \
@@ -82,3 +84,19 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ('rate', 'comment')
+
+
+class QueryStaySerializer(serializers.Serializer):
+    city_or_country = serializers.CharField()
+    start_date = serializers.DateTimeField(default=datetime.now())
+    end_date = serializers.DateTimeField(default=datetime.now() + timedelta(days=20))
+    stay_Adults = serializers.IntegerField(default=1)
+    stay_Children = serializers.IntegerField(default=0)
+    stay_Room = serializers.IntegerField(default=1)
+
+
+class QueryFlightSerializer(serializers.Serializer):
+    start_city = serializers.CharField(max_length=100)
+    end_city = serializers.CharField(max_length=100)
+    start_date = serializers.DateField(default=datetime.now())
+    end_date = serializers.DateField(default=datetime.now() + timedelta(days=20))
