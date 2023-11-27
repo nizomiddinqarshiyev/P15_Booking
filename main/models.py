@@ -70,7 +70,7 @@ class Stay(models.Model):
     features = models.TextField(blank=True, null=True)
     slug = models.SlugField(blank=True, null=True)
     price = models.FloatField()
-    property_rate_stars = models.IntegerField()
+    rate = models.FloatField(null=True, blank=True)
     level = models.IntegerField(default=0)
 
     def save(self, *args, **kwargs):
@@ -136,4 +136,6 @@ class HotelAreaInfo(models.Model):
 class Image(models.Model):
     stay = models.ForeignKey('Stay', on_delete=models.CASCADE)
     image = models.ImageField(upload_to=slugify_upload, blank=True, null=True)
+
+
 
