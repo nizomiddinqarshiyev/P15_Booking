@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from main.models import Stay, StayOrder, Flight, FlightOrder, CarRental, CarRentalOrder, Country, City, Location, \
-    Category
+    Category, Comment
 
 
 class StaySerializerFilter(serializers.Serializer):
@@ -76,3 +76,9 @@ class CarRentalOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = CarRentalOrder
         fields = '__all__'
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ('rate', 'comment')

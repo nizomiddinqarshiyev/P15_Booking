@@ -11,3 +11,4 @@ class AdminPermission(permissions.BasePermission):
             return user_role == 'admin'
         except UserRole.DoesNotExist:
             return False
+

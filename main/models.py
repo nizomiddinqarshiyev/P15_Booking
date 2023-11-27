@@ -70,6 +70,7 @@ class Stay(models.Model):
     features = models.TextField(blank=True, null=True)
     slug = models.SlugField(blank=True, null=True)
     price = models.FloatField()
+    property_rate_stars = models.FloatField()
     rate = models.FloatField(null=True, blank=True)
     level = models.IntegerField(default=0)
 
@@ -138,4 +139,9 @@ class Image(models.Model):
     image = models.ImageField(upload_to=slugify_upload, blank=True, null=True)
 
 
-
+class Comment(models.Model):
+    comment = models.TextField()
+    rate = models.IntegerField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    stay = models.ForeignKey(Stay, on_delete=models.CASCADE, blank=True, null=True)
