@@ -29,6 +29,8 @@ class StayAPIView(GenericAPIView):
     def get(self, request, pk):
         location = Location.objects.get(pk=pk)
         base = Stay.objects.filter(location=location)
+        comment = Comment.objects.filter(stay=base)
+        rate = sum(list(map(lambda t: t.rate, comment))) / len(comment)
         image_data = []
         for stay in base:
             img = Image.objects.filter(stay=stay).first()
@@ -40,7 +42,8 @@ class StayAPIView(GenericAPIView):
         serializer_data = StaysSerializer(base, many=True).data
         response_data = {
             'stay_info': serializer_data,
-            'images': image_data
+            'images': image_data,
+            'rate': rate
         }
 
         return Response(response_data)
