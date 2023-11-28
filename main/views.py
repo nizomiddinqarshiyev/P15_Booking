@@ -192,32 +192,28 @@ class CreateStayAPIView(CreateAPIView):
 class StayFilterView(GenericAPIView):
     permission_classes = ()
     serializer_class = StaysSerializer
-    queryset = Stay.objects.all()
 
     @swagger_auto_schema(query_serializer=StaySerializerFilter)
     def get(self, request):
+        queryset = Stay.objects.all()
         name = self.request.query_params.get('name', '')
-        recommend = self.request.query_params.get('recommendation', '')
+        recommend = self.request.query_params.get('recommend', None)
         category_name = self.request.query_params.get('category_name', '')
         rate = self.request.query_params.get('rate', None)
 
-        filters = Q()
-
         if name:
-            filters &= Q(name__icontains=name)
+            queryset = queryset.filter(name__icontains=name)
 
         if recommend:
-            filters &= Stay.objects.filter(property_rate_stars__gte=6)
+            queryset = queryset.filter(property_rate_stars__gte=7)
 
         if category_name:
-            filters &= Q(category__name__icontains=category_name)
+            queryset = queryset.filter(category__name=category_name)
 
         if rate is not None:
-            filters &= Q(property_rate_stars=rate)
+            queryset = queryset.filter(property_rate_stars=rate)
 
-        stays = self.queryset.filter(filters)
-
-        serializer = StaysSerializer(stays, many=True)
+        serializer = StaysSerializer(queryset, many=True)
         return Response(serializer.data)
 
 
