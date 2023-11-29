@@ -47,9 +47,25 @@ services:
       - POSTGRES_PORT=$DB_PORT
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+  redis:
+    image: redis:6-alpine
+    volumes:
+      - redis_data:/data/
+    expose:
+      - 6379
+
+  celery:
+    build: .
+    command: celery -A DjangoRestAPIBooking worker --loglevel=info
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+    mem_limit: 2g
 
 
 volumes:
   static_volume:
   media_volume:
   postgres_data:
+  redis_data:

@@ -1,9 +1,11 @@
 from django.contrib.auth import get_user_model
-from django.contrib.auth import hashers, login, logout, authenticate
+from django.contrib.auth import hashers, logout
 from rest_framework.generics import GenericAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from accounts.serializer import UserSerializer, LoginSerializer
-from accounts.subscriber import send_mail
+from rest_framework.views import APIView
+
+from accounts.serializer import UserSerializer
 
 User = get_user_model()
 
@@ -21,14 +23,9 @@ class SignupAPIView(GenericAPIView):
 
         if password1 == password2:
             if User.objects.filter(username=username).exists():
-                return Response({'success': False, 'error': 'Error username'})
+                return Response({'success': False, 'error': 'This username already exists'})
             if User.objects.filter(email=email).exists():
-                return Response({'success': False, 'error': 'Error email'})
-            code = send_mail(email)
-            active_code = input('Active code >>> ')
-            if active_code != code:
-                return Response({'success': False, 'error': 'Error code'})
-
+                return Response({'success': False, 'error': 'This email already exists'})
             user = User.objects.create(
                 first_name=first_name,
                 last_name=last_name,
@@ -58,12 +55,20 @@ class SignupAPIView(GenericAPIView):
 #             return Response({'success': False, 'error': 'Username or password invalid !!!'})
 
 
-# class LogoutAPIVew(GeneratorExit):
-#
-#     def get(self, request):
-#         logout(request)
-#         return Response()
+class LogoutAPIVew(GenericAPIView):
 
+    def get(self, request):
+        logout(request)
+        return Response()
+
+
+class UserInfoAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        user = request.user
+        user_serializer = UserSerializer(user)
+        return Response({'success': True, 'data': user_serializer.data})
 
 
 

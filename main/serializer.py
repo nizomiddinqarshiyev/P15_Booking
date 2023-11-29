@@ -3,16 +3,17 @@ from datetime import datetime, timedelta
 from django_elasticsearch_dsl_drf.serializers import DocumentSerializer
 from rest_framework import serializers
 
-from main.documents import DocumentBlog
+from main.documents import DocumentStay
 from main.models import Stay, StayOrder, Flight, FlightOrder, CarRental, CarRentalOrder, Country, City, Location, \
-    Category, Comment, Subscriber
+    Category, Comment, Subscriber, Blog
+from main.tasks import send_email
 
 
 class StaySerializerFilter(serializers.Serializer):
     recommend = serializers.CharField(required=False)
     name = serializers.CharField(required=False)
     category_name = serializers.CharField(required=False)
-    rate = serializers.IntegerField(required=False)
+    level = serializers.IntegerField(required=False)
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -50,6 +51,16 @@ class StaysSerializer(serializers.ModelSerializer):
     class Meta:
         model = Stay
         fields = '__all__'
+
+
+class StayCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Stay
+        fields = '__all__'
+
+
+class QuerySerializer(serializers.Serializer):
+    query = serializers.CharField()
 
 
 class FlightSerializer(serializers.ModelSerializer):
@@ -110,12 +121,33 @@ class EmailSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class BlogDocumentSerializer(DocumentSerializer):
-    price = serializers.FloatField()
+class StayDocumentSerializer(DocumentSerializer):
+    class Meta:
+        document = DocumentStay
+        fields = ('title', 'slug', 'description')
 
-    def get_price(self, obj):
-        return float(obj.price)
+
+class SlugSerializer(serializers.Serializer):
+    slug = serializers.CharField()
+
+
+class BlogSerializerForRetrieve(serializers.ModelSerializer):
+    class Meta:
+        model = Blog
+        fields = '__all__'
+
+
+class BlogSerializer(serializers.ModelSerializer):
+
+    def create(self, validated_data):
+        subscribers = Subscriber.objects.all().values('email')
+        subscriber_emails = [email['email'] for email in list(subscribers)]
+        print(subscriber_emails)
+        todo = Blog.objects.create(**validated_data)
+        todo_serializer = BlogSerializerForRetrieve(todo)
+        send_email.delay(subscriber_emails, todo_serializer.data)
+        return todo
 
     class Meta:
-        document = DocumentBlog
-        fields = ('title', 'slug', 'description')
+        model = Blog
+        fields = '__all__'

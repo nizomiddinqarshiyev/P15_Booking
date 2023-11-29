@@ -71,6 +71,9 @@ class Stay(models.Model):
     slug = models.SlugField(blank=True, null=True)
     price = models.FloatField()
     level = models.IntegerField(default=0)
+    room = models.IntegerField(default=0, null=True, blank=True)
+    adults = models.IntegerField(default=0, null=True, blank=True)
+    children = models.IntegerField(default=0, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:

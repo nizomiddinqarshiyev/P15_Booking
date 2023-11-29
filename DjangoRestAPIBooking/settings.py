@@ -144,7 +144,7 @@ ELASTICSEARCH_DSL = {
 
 connections.create_connection(hosts=['http://elasticsearch:9200'])
 ELASTIC_SEARCH_INDEX_NAMES = {
-    'main.DocumentBook': 'main'
+    'main.DocumentStay': 'main'
 }
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=20),
@@ -209,7 +209,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'qarshiyevnizomiddin75@gmail.com'
-EMAIL_HOST_PASSWORD = 'hxcleicnkqftuqjc'
+EMAIL_HOST_PASSWORD = 'ypwccdxdonkstcjx'
 
 STATIC_URL = 'static/'
 MEDIA_URL = 'media/'
